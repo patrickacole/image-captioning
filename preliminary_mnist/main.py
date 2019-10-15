@@ -14,8 +14,6 @@ class LargeNet(nn.Module):
             nn.ReLU(),
             nn.Linear(1200, 1200),
             nn.ReLU(),
-            nn.Linear(1200, 1200),
-            nn.ReLU(),
             nn.Linear(1200, 10)
         )
 
@@ -33,8 +31,6 @@ class SmallNet(nn.Module):
             nn.ReLU(),
             nn.Linear(30, 30),
             nn.ReLU(),
-            nn.Linear(30, 30),
-            nn.ReLU(),
             nn.Linear(30, 10)
         )
 
@@ -44,9 +40,34 @@ class SmallNet(nn.Module):
         return x
 
 
+def cat_crossentropy(input, target, size_average=True):
+    """ Cross entropy that accepts soft targets
+    Args:
+         pred: predictions for neural network
+         targets: targets, can be soft
+         size_average: if false, sum is returned instead of mean
+
+    Examples::
+
+        input = torch.FloatTensor([[1.1, 2.8, 1.3], [1.1, 2.1, 4.8]])
+        input = torch.autograd.Variable(out, requires_grad=True)
+
+        target = torch.FloatTensor([[0.05, 0.9, 0.05], [0.05, 0.05, 0.9]])
+        target = torch.autograd.Variable(y1)
+        loss = cross_entropy(input, target)
+        loss.backward()
+    """
+    logsoftmax = nn.LogSoftmax(dim=1)
+    if size_average:
+        return torch.mean(torch.sum(-target * logsoftmax(input), dim=1))
+    else:
+        return torch.sum(torch.sum(-target * logsoftmax(input), dim=1))
+
+
 def iterate_dataloader(dataloader, net, optimizer, train, softtarget=None, temp=3):
     hard_criterion = torch.nn.CrossEntropyLoss()
-    soft_criterion = torch.nn.BCEWithLogitsLoss()
+    running_acc = 0
+    batches = 0
 
     pbar = tqdm(enumerate(dataloader, 1),
                 desc=f"{'Train' if train else 'Test'} {'Soft' if softtarget is not None else 'Hard'}")
@@ -65,7 +86,7 @@ def iterate_dataloader(dataloader, net, optimizer, train, softtarget=None, temp=
         hard_loss = hard_criterion(out, y)
         soft_loss = torch.zeros(1)
         if softtarget is not None:
-            soft_loss = soft_criterion(out, soft_y)
+            soft_loss = cat_crossentropy(out, soft_y)
 
         loss = hard_loss + soft_loss
 
@@ -76,7 +97,12 @@ def iterate_dataloader(dataloader, net, optimizer, train, softtarget=None, temp=
             optimizer.step()
 
         acc = torch.mean((pred_labels == y).type(torch.FloatTensor))
-        pbar.set_postfix_str(f"{acc * 100:.1f}% {hard_loss.item():.3f}HL {soft_loss.item():.3f}SL")
+        running_acc += acc.item()
+        batches = i
+        pbar.set_postfix_str(f"{running_acc / batches * 100:.1f}% {hard_loss.item():.3f}HL {soft_loss.item():.3f}SL")
+
+    pbar.close()
+    return running_acc / batches
 
 
 if __name__ == '__main__':
@@ -91,16 +117,19 @@ if __name__ == '__main__':
     testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False, num_workers=4)
 
     large_net = LargeNet()
-    large_opt = torch.optim.Adam(large_net.parameters(), lr=1e-3)
+    large_opt = torch.optim.SGD(large_net.parameters(), lr=1e-3)
     iterate_dataloader(trainloader, large_net, large_opt, train=True)
-    iterate_dataloader(testloader, large_net, large_opt, train=False)
+    acc = iterate_dataloader(testloader, large_net, large_opt, train=False)
+    print(f"\nLarge Net with Hard Training: {100 * acc:.1f}%")
 
     small_net = SmallNet()
-    small_opt = torch.optim.Adam(small_net.parameters(), lr=1e-3)
+    small_opt = torch.optim.SGD(small_net.parameters(), lr=1e-3)
     iterate_dataloader(trainloader, small_net, small_opt, train=True)
-    iterate_dataloader(testloader, small_net, small_opt, train=False)
+    acc = iterate_dataloader(testloader, small_net, small_opt, train=False)
+    print(f"\nSmall Net with Hard Training: {100 * acc:.1f}%")
 
     small_net = SmallNet()
-    small_opt = torch.optim.Adam(small_net.parameters(), lr=1e-3)
-    iterate_dataloader(trainloader, small_net, small_opt, train=True, softtarget=large_net)
-    iterate_dataloader(testloader, small_net, small_opt, train=False)
+    small_opt = torch.optim.SGD(small_net.parameters(), lr=1e-3)
+    iterate_dataloader(trainloader, small_net, small_opt, train=True, softtarget=large_net, temp=3)
+    acc = iterate_dataloader(testloader, small_net, small_opt, train=False)
+    print(f"\nSmall Net with Soft Training: {100 * acc:.1f}%")
