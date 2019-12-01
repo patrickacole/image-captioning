@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cd ..
+cd scratch
 mkdir cocodata
 cd cocodata
 
@@ -21,3 +21,6 @@ if [[ ! -e val2017 ]]; then
     unzip -q val2017.zip
     rm val2017.zip
 fi
+
+cd ../..
+

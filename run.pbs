@@ -1,0 +1,17 @@
+#!/bin/bash
+#PBS -l nodes=01:ppn=16:xk
+#PBS -l walltime=08:00:00
+#PBS -N project
+#PBS -e $PBS_JOBID.err
+#PBS -o $PBS_JOBID.out
+#PBS -m bea
+#PBS -M hip2@illinois.edu
+
+cd /u/training/tra355
+./get_data.sh
+cd cs547_finalproject
+
+. /opt/modules/default/init/bash # NEEDED to add module commands to shell
+module load python/2.0.1
+aprun -n 1 -N 1 python train.py
+
