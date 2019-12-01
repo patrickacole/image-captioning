@@ -12,9 +12,9 @@ from model import Show_and_tell
 data_dir = 'cocodata'
 vocab_path = os.path.join(data_dir, 'vocab.pkl')
 train_path = os.path.join(data_dir, 'train2017')
-train_annotation_path = 'annotations/captions_train2017.json'
+train_annotation_path = os.path.join(data_dir, 'annotations/captions_train2017.json')
 test_path = os.path.join(data_dir, 'val2017')
-test_annotation_path = 'annotations/captions_val2017.json'
+test_annotation_path = os.path.join(data_dir, 'annotations/captions_val2017.json')
 save_path = 'output'
 
 if not os.path.exists(vocab_path):
