@@ -6,7 +6,9 @@ import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pack_padded_sequence
 
+import dataset
 from dataset import CustomCocoCaptions
+import model
 from model import Show_and_tell
 
 data_dir = '../scratch/cocodata'
@@ -51,7 +53,7 @@ train_loader = DataLoader(dataset=train_custom_coco_cap,
                          batch_size=32,
                          shuffle=True,
                          num_workers=4,
-                         collate_fn=custom_collate_fn)
+                         collate_fn=dataset.custom_collate_fn)
 # Similar to test_loader
 test_transforms = transforms.Compose([
     transforms.Resize((299, 299)),
@@ -65,18 +67,18 @@ test_loader = DataLoader(dataset=test_custom_coco_cap,
                          batch_size=32,
                          shuffle=False,
                          num_workers=4,
-                         collate_fn=custom_collate_fn)
+                         collate_fn=dataset.custom_collate_fn)
 
+model = Show_and_tell(vocab_size=12004)
+model.to(device)
 params = []
 for k, v in model.named_parameters():
     if v.requires_grad == True:
         params.append(v)
 
 device = torch.device(("cpu","cuda:0")[torch.cuda.is_available()])
-model = Show_and_tell(vocab_size=12004)
 optimizer = torch.optim.Adam(params, lr=0.001)
 criterion = nn.CrossEntropyLoss()
-model.to(device)
 epochs = 10
 # every `test_epoch` run validation code
 test_epoch = 5
@@ -119,8 +121,8 @@ for epoch in range(epochs):
 
         print('\tTest Loss: {:.3f}'.format(avg_test_loss/i))
         # see how a sample sentence looks
-        sample = convert_to_sentence(predicted_ids[0], vectorizer.get_feature_names())
-        target = convert_to_sentence(captions[0], vectorizer.get_feature_names())
+        sample = dataset.convert_to_sentence(predicted_ids[0], vectorizer.get_feature_names())
+        target = dataset.convert_to_sentence(captions[0], vectorizer.get_feature_names())
         print("\tSample:", sample)
         print("\tTarget:", target, end=' ')
     print()

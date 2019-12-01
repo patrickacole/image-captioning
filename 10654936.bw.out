@@ -1,0 +1,27 @@
+----------------------------------------
+Begin Torque Prologue on nid25329
+at Sun Dec  1 16:48:50 CST 2019
+Job Id:			10654936.bw
+Username:		tra355
+Group:			TRAIN_bayw
+Job name:		project
+Requested resources:	nodes=01:ppn=16:xk,walltime=08:00:00,neednodes=01:ppn=16:xk
+Queue:			normal
+Account:		bayw
+End Torque Prologue:  0.096 elapsed
+----------------------------------------
+
+
+
+
+Requirement already satisfied: pycocotools in /mnt/a/u/training/tra355/.local/lib/python3.5/site-packages (2.0.0)
+loading annotations into memory...
+Done (t=2.86s)
+creating index...
+index created!
+loading annotations into memory...
+Done (t=0.20s)
+creating index...
+index created!
+Application 82311390 exit codes: 1
+Application 82311390 resources: utime ~13s, stime ~23s, Rss ~854700, inblocks ~882634, outblocks ~426214

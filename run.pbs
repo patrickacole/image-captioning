@@ -8,10 +8,11 @@
 #PBS -M hip2@illinois.edu
 
 cd /u/training/tra355
-./get_data.sh
+#./get_data.sh
 cd cs547_finalproject
 
 . /opt/modules/default/init/bash # NEEDED to add module commands to shell
 module load python/2.0.1
+pip3 install --user pycocotools
 aprun -n 1 -N 1 python train.py
 
