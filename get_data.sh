@@ -1,5 +1,6 @@
 #! /bin/bash
 
+cd scratch
 mkdir cocodata
 cd cocodata
 
@@ -21,5 +22,5 @@ if [[ ! -e val2017 ]]; then
     rm val2017.zip
 fi
 
-cd ..
+cd ../..
 
