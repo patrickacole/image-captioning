@@ -22,7 +22,7 @@ class Show_and_tell(nn.Module):
                  num_lstm_layers=1, max_seq_length=100):
         super(Show_and_tell, self).__init__()
 
-        self.cnn_embedding = inception_v3(pretrained=True, aux_logits=False)
+        self.cnn_embedding = inception_v3(pretrained=True, aux_logits=True)
         for param in self.cnn_embedding.parameters():
             param.requires_grad = False
         out_features = self.cnn_embedding.fc.in_features

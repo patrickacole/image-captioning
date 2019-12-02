@@ -5,6 +5,7 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pack_padded_sequence
+from tqdm import tqdm
 
 import dataset
 from dataset import CustomCocoCaptions
@@ -70,13 +71,14 @@ test_loader = DataLoader(dataset=test_custom_coco_cap,
                          collate_fn=dataset.custom_collate_fn)
 
 model = Show_and_tell(vocab_size=12004)
-model.to(device)
+#model.to(device)
+model.cuda()
 params = []
 for k, v in model.named_parameters():
     if v.requires_grad == True:
         params.append(v)
 
-device = torch.device(("cpu","cuda:0")[torch.cuda.is_available()])
+#device = torch.device(("cpu","cuda:0")[torch.cuda.is_available()])
 optimizer = torch.optim.Adam(params, lr=0.001)
 criterion = nn.CrossEntropyLoss()
 epochs = 10
@@ -87,9 +89,12 @@ for epoch in range(epochs):
     avg_train_loss = 0.0
     # train
     model.train()
+    pbar = tqdm(train_loader, desc="Epoch " + str(epoch) + "Training")
     for i, (images, captions, lengths) in enumerate(pbar, 1):
-        images = images.to(device)
-        captions = captions.to(device)
+        images = images.cuda()
+        #images = images.to(device)
+        captions = captions.cuda()
+        #captions = captions.to(device)
 
         optimizer.zero_grad()
         targets = pack_padded_sequence(captions, lengths, batch_first=True).data
@@ -105,8 +110,10 @@ for epoch in range(epochs):
         model.eval()
         avg_test_loss = 0.0
         for i, (images, captions, lengths) in enumerate(pbar, 1):
-            images = images.to(device)
-            captions = captions.to(device)
+            images = images.cuda()
+            #images = images.to(device)
+            captions = captions.cuda()
+            #captions = captions.to(device)
             max_sequence_length = captions.size(1)
 
             targets = pack_padded_sequence(captions, lengths, batch_first=True).data

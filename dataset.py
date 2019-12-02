@@ -18,7 +18,7 @@ class CustomCocoCaptions(dset.CocoCaptions):
         # as we use pycococap_eval for evaluation
         # TODO: verify the rand_cap_index is actually different in each iter
         rand_cap_index = torch.randint(0, len(captions), (1,)).item()
-        rand_caption = captions[rand_cap_index]
+        rand_caption = captions[int(rand_cap_index)]
 
         if self.img_transform is not None:
             image = self.img_transform(image)
