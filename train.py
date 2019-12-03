@@ -5,7 +5,6 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pack_padded_sequence
-from tqdm import tqdm
 
 import dataset
 from dataset import CustomCocoCaptions
@@ -89,8 +88,7 @@ for epoch in range(epochs):
     avg_train_loss = 0.0
     # train
     model.train()
-    pbar = tqdm(train_loader, desc="Epoch " + str(epoch) + "Training")
-    for i, (images, captions, lengths) in enumerate(pbar, 1):
+    for i, (images, captions, lengths) in enumerate(train_loader, 1):
         images = images.cuda()
         #images = images.to(device)
         captions = captions.cuda()
@@ -109,7 +107,7 @@ for epoch in range(epochs):
     if (epoch + 1) % test_epoch == 0:
         model.eval()
         avg_test_loss = 0.0
-        for i, (images, captions, lengths) in enumerate(pbar, 1):
+        for i, (images, captions, lengths) in enumerate(test_loader, 1):
             images = images.cuda()
             #images = images.to(device)
             captions = captions.cuda()
