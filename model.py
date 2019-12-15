@@ -14,7 +14,7 @@
 
 import torch
 import torch.nn as nn
-from torchvision.models import inception_v3
+from torchvision.models import resnet34
 from torch.nn.utils.rnn import pack_padded_sequence
 
 class Show_and_tell(nn.Module):
@@ -22,9 +22,9 @@ class Show_and_tell(nn.Module):
                  num_lstm_layers=1, max_seq_length=100):
         super(Show_and_tell, self).__init__()
 
-        self.cnn_embedding = inception_v3(pretrained=True, aux_logits=True)
-        for param in self.cnn_embedding.parameters():
-            param.requires_grad = False
+        self.cnn_embedding = resnet34(pretrained=True)
+        # for param in self.cnn_embedding.parameters():
+        #     param.requires_grad = False
         out_features = self.cnn_embedding.fc.in_features
         self.cnn_embedding.fc = nn.Linear(out_features, embed_size)
 

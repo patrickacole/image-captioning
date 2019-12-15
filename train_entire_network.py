@@ -69,22 +69,34 @@ test_loader = DataLoader(dataset=test_custom_coco_cap,
                          num_workers=4,
                          collate_fn=dataset.custom_collate_fn)
 
-model = Show_and_tell(vocab_size=vocab_size+4)
+model = Show_and_tell(vocab_size=vocab_size+4, hidden_units=1024)
+# checkpoint = torch.load(os.path.join(save_path, 'model.pth'))
+# model.load_state_dict(checkpoint['state_dict'])
 #model.to(device)
 model.cuda()
+# enable all of the layers in the cnn_embedding
+# for param in model.cnn_embedding.parameters():
+#     param.requires_grad = True
+
+# get all of the parameters for the optimizer
 params = []
 for k, v in model.named_parameters():
     if v.requires_grad == True:
         params.append(v)
 
 #device = torch.device(("cpu","cuda:0")[torch.cuda.is_available()])
-optimizer = torch.optim.Adam(params, lr=0.001)
+learning_rate = 0.001
+optimizer = torch.optim.Adam(params, lr=learning_rate)
 criterion = nn.CrossEntropyLoss()
-epochs = 15
+epochs = 30
 # every `test_epoch` run validation code
 test_epoch = 5
 
 for epoch in range(epochs):
+    if (epoch % 10 == 0):
+        for param_group in optimizer.param_groups:
+            param_group['lr'] = learning_rate / 10.0
+
     avg_train_loss = 0.0
     # train
     model.train()
@@ -142,4 +154,4 @@ for epoch in range(epochs):
     save_dict = {'state_dict' : model.state_dict(),
                  'optim_dict' : optimizer.state_dict(),
                  'epoch'      : epoch + 1}
-    torch.save(save_dict, os.path.join(save_path, 'model.pth'))
+    torch.save(save_dict, os.path.join(save_path, 'model_entire_network.pth'))
