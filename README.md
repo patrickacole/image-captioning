@@ -2,6 +2,8 @@
 
 [Link to paper](https://arxiv.org/pdf/1411.4555.pdf)
 
+Our results can be found in [report.pdf](report.pdf).
+
 ### `model.py`
 This contains our show-and-tell model definition. It requires the pretrained Resnet34 model.
 
